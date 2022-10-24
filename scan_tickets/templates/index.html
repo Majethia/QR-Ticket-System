@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+  {% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+    <div id="reader" width="600px" height="480px"></div>
+    <form id="form" action="/" method="post">
+      {% csrf_token %}
+      <input name="result" id="result" value="Result: " />
+    </form>
+    <script>
+      Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+          var cameraId = devices[0].id;
+          const html5QrCode = new Html5Qrcode("reader");
+          const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+          function qrCodeSuccessCallback(decodedText, decodedResult) {
+            // handle the scanned code as you like, for example:
+            console.log(`Code matched = ${decodedText}`);
+            document.getElementById("result").value = decodedText;
+            document.getElementById("form").submit();
+            html5QrCode.stop().then((ignore) => {
+              // QR Code scanning is stopped.
+            }).catch((err) => {
+              // Stop failed, handle it.
+            });
+          }
+          
+          html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+        }
+      }).catch(err => {
+        // handle err
+      });
+      </script>
+</body>
+</html>
